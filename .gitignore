@@ -1,0 +1,17 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境 (如果你有的话)
+venv/
+env/
+.env
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器缓存
+.vscode/
+.idea/

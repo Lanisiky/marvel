@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漫威宇宙可视化平台</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+ 
+    <div class="page-header">
+        <h1>漫威宇宙人物关系构建</h1>
+    </div>
+    <div class="separator"></div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-shortest">关系路径查询</button>
+        <button class="tab-btn" data-tab="tab-explore">交互探索</button>
+        <button class="tab-btn" data-tab="tab-ring">双层环形图</button>
+        <button class="tab-btn" data-tab="tab-social">社交网络分析</button>
+    </div>
+
+    <div id="tab-shortest" class="tab-content active">
+        <div class="controls">
+            <label>角色1：<select id="start"></select></label>
+            <label>角色2：<select id="end"></select></label>
+            <button id="query">查询路径</button>
+        </div>
+        <div class="graph-container">
+            <div id="static-graph"></div>
+        </div>
+    </div>
+
+    <div id="tab-explore" class="tab-content">
+        <div class="explore-hint"></div>
+        <div id="interactive-container"></div>
+    </div>
+
+    <div id="tab-ring" class="tab-content">
+        <div class="ring-char-selector">
+            <div class="ring-char-item"><label>角色1：</label><select id="ringChar1"></select></div>
+            <div class="ring-char-item"><label>角色2：</label><select id="ringChar2"></select></div>
+            <div class="ring-char-item"><label>角色3：</label><select id="ringChar3"></select></div>
+            <div class="ring-char-item"><label>角色4：</label><select id="ringChar4"></select></div>
+            <div class="ring-char-item"><label>角色5：</label><select id="ringChar5"></select></div>
+            <div class="ring-char-item"><label>角色6：</label><select id="ringChar6"></select></div>
+        </div>
+        
+        <div class="chart-container">
+            <div id="complex-chart" style="width:100%; height:100%;"></div>
+        </div>
+    </div>
+
+    <div id="tab-social" class="tab-content">
+        <div id="social-network-container">
+            <div class="sn-search-container">
+                <input type="text" id="sn-character-search" placeholder="搜索角色名称...">
+            </div>
+            
+            <div class="sn-controls">
+                <button id="sn-pagerank-btn" class="active">按重要性(PageRank)</button>
+                <button id="sn-degree-btn">按连接数(Degree)</button>
+                <button id="sn-time-btn">按出场时间</button>
+                <button id="sn-reset-view">重置视图</button>
+                <button id="sn-highlight-bridges">高亮桥梁角色</button>
+                <button id="sn-highlight-leaders">高亮领袖角色</button>
+                <button id="sn-toggle-boundary">显示边界</button>
+            </div>
+            
+            <div class="sn-community-highlight">
+                <button data-community="0" class="sn-community-btn">复仇者联盟</button>
+                <button data-community="1" class="sn-community-btn">银河护卫队</button>
+                <button data-community="2" class="sn-community-btn">瓦坎达</button>
+                <button data-community="3" class="sn-community-btn">魔法系</button>
+                <button data-community="4" class="sn-community-btn">反派</button>
+                <button data-community="5" class="sn-community-btn">神域</button>
+                <button data-community="6" class="sn-community-btn">X战警</button>
+                <button data-community="7" class="sn-community-btn">神奇四侠</button>
+                <button data-community="8" class="sn-community-btn">捍卫者联盟</button>
+                <button data-community="9" class="sn-community-btn">宇宙力量</button>
+                <button id="sn-reset-highlight">重置高亮</button>
+            </div>
+            
+            <div class="sn-dashboard">
+                <div class="sn-chart-container" id="sn-force-graph">
+                    <div class="sn-chart-title">
+                        <span>角色关系网络（力导向图）</span>
+                        <span id="sn-selected-character">当前选中: 钢铁侠</span>
+                    </div>
+                    <p class="sn-chart-description">节点大小表示角色重要性，颜色表示所属社群，连线粗细表示共现次数。</p>
+                    <div id="sn-graph-vis"></div>
+                    <div class="sn-legend" id="sn-graph-legend"></div>
+                    <div class="sn-graph-controls">
+                        <button id="sn-center-graph">居中所有节点</button>
+                        <button id="sn-compact-graph">紧凑布局</button>
+                        <button id="sn-spread-graph">分散布局</button>
+                    </div>
+                    <div class="sn-zoom-hint"></div>
+                </div>
+                
+                <div class="sn-chart-container" id="sn-timeline-chart">
+                    <div class="sn-chart-title">角色时间线：<span id="sn-timeline-character">钢铁侠</span></div>
+                    <div id="sn-timeline-vis"></div>
+                    <div id="sn-selected-info-container" class="sn-selected-info"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>结果</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+    
+    <div class="loading" id="loading">加载中...</div>
+
+    <script src="static_analysis.js"></script> 
+    <script src="interactive.js"></script>
+    <script src="ring_analysis.js"></script>
+    <script src="social_network.js"></script> <script>
+        // Tab 切换逻辑
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 1. UI 切换
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                const tabId = btn.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+
+                // 2. 逻辑分发
+                if (tabId === 'tab-explore') {
+                    setTimeout(() => { if (window.resizeInteractive) window.resizeInteractive(); }, 10);
+                }
+
+                if (tabId === 'tab-ring') {
+                    setTimeout(() => { if (window.initRingView) window.initRingView(); }, 10);
+                }
+
+                if (tabId === 'tab-social') {
+                    setTimeout(() => { 
+                        if (window.initSocialNetwork && !window.snInitialized) {
+                            window.initSocialNetwork();
+                        } else if (window.snResizeGraph) {
+                            window.snResizeGraph(); 
+                        }
+                    }, 10);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
